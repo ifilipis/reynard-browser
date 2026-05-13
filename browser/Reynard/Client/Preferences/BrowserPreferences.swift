@@ -161,6 +161,10 @@ final class BrowserPreferences {
     
     // MARK: - JIT
     struct JITSettings {
+        static var hasEntitledJIT: Bool {
+            getEntitlementValue("com.apple.private.security.no-sandbox")
+        }
+
         static var hasPairingFile: Bool {
             FileManager.default.fileExists(atPath: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("pairingFile.plist", isDirectory: false).path)
@@ -168,13 +172,13 @@ final class BrowserPreferences {
         
         static var isJITEnabled: Bool {
             get {
-                guard hasPairingFile else {
+                guard hasEntitledJIT || hasPairingFile else {
                     return false
                 }
                 return prefs.bool(forSetting: "JITSettings", key: "isJITEnabled")
             }
             set {
-                prefs.set(hasPairingFile && newValue, forSetting: "JITSettings", key: "isJITEnabled")
+                prefs.set((hasEntitledJIT || hasPairingFile) && newValue, forSetting: "JITSettings", key: "isJITEnabled")
             }
         }
     }
